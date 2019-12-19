@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: Template
+labels:
+  template: 'educ-document-man-api-template'
+metadata:
+  name: 'educ-document-man-api-template'
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      build: educ-document-man-api-pipeline
+    name: educ-document-man-api-pipeline
+    namespace: c2mvws-tools
+  spec:
+    source:
+      contextDir: api
+      git:
+        ref: master
+        uri: 'https://github.com/bcgov/EDUC-DOCUMENT-MAN-API'
+      type: Git
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfilePath: jenkinsfile
