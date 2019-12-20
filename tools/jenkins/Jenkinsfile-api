@@ -9,12 +9,12 @@ pipeline{
       TEST = 'c2mvws-test'
       PROD = 'c2mvws-prod'
 
-      REPO_NAME = 'educ-document-man-api'
+      REPO_NAME = 'educ-document-api'
       OWNER = 'bcgov'
       JOB_NAME = 'master'
       TAG = 'dev'
       
-      APP_NAME = 'document-man-api'
+      APP_NAME = 'document-api'
       APP_DOMAIN = 'pathfinder.gov.bc.ca'
 
       SOURCE_REPO_RAW = 'https://github.com/${OWNER}/${REPO_NAME}/master'
@@ -39,21 +39,21 @@ pipeline{
     }
 	  stage('Add client jar to m2 repo') {
 		  steps {	
-        sh "mvn install:install-file -Dfile=./api/target/document-man-api-${VERSION}-client.jar -DgroupId=ca.bc.gov.educ.api.document-man -DartifactId=document-man-api-client -Dversion=${VERSION} -Dpackaging=jar"
+        sh "mvn install:install-file -Dfile=./api/target/document-api-${VERSION}-client.jar -DgroupId=ca.bc.gov.educ.api.document -DartifactId=document-api-client -Dversion=${VERSION} -Dpackaging=jar"
       }
     }
     stage('Create Image Builder') {
       when {
         expression {
           openshift.withCluster() {
-            return !openshift.selector("bc", "educ-document-man-api-master").exists();
+            return !openshift.selector("bc", "educ-document-api-master").exists();
           }
         }
       }
       steps {
         script {
           openshift.withCluster() {
-            openshift.newBuild("--name=educ-document-man-api-master", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
+            openshift.newBuild("--name=educ-document-api-master", "--image-stream=redhat-openjdk18-openshift:1.1", "--binary")
           }
         }
       }
@@ -62,7 +62,7 @@ pipeline{
       steps {
         script {
           openshift.withCluster() {
-            openshift.selector("bc", "educ-document-man-api-master").startBuild("--from-file=./api/target/document-man-api-${VERSION}.jar", "--wait")
+            openshift.selector("bc", "educ-document-api-master").startBuild("--from-file=./api/target/document-api-${VERSION}.jar", "--wait")
           }
         }
       }
