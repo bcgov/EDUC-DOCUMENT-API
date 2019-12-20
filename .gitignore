@@ -8,6 +8,7 @@ bin/
 *.iml
 .project
 .classpath
+.vscode
 application-local.properties
 application-devlocal.properties
 ojdbc8.jar
