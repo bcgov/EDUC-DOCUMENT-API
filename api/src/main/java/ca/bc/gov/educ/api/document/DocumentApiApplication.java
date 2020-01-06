@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-//@EntityScan("ca.bc.gov.educ.api.document")
+@EntityScan("ca.bc.gov.educ.api.document")
 @ComponentScan("ca.bc.gov.educ.api.document")
 public class DocumentApiApplication {
 
