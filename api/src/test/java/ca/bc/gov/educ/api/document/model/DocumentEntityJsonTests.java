@@ -42,7 +42,6 @@ public class DocumentEntityJsonTests {
 
         DocumentOwnerEntity owner = new DocumentOwnerEntity();
         
-        //owner.setDocument(document);
         owner.setDocumentOwnerTypeCode("PENRETRIEV");
         owner.setDocumentOwnerID(this.penReqID);
         owner.setCreateUser("API");

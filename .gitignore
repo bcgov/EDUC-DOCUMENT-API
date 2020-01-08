@@ -6,8 +6,6 @@ target/
 bin/
 .idea
 *.iml
-.project
-.classpath
 .vscode
 application-local.properties
 application-devlocal.properties

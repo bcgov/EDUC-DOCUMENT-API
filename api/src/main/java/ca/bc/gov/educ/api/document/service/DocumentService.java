@@ -49,7 +49,10 @@ public class DocumentService {
         if(document.getDocumentID()!=null){
             throw new InvalidParameterException("documentID");
         }
-        document.getDocumentOwners().forEach(owner -> setCreateAndUpdateInfo(owner));
+        document.getDocumentOwners().forEach(owner -> {
+            owner.setDocument(document);
+            setCreateAndUpdateInfo(owner);
+        });
         document.setUpdateUser(ApplicationProperties.CLIENT_ID);
         document.setUpdateDate(new Date());
         document.setCreateUser(ApplicationProperties.CLIENT_ID);
