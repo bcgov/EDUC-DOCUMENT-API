@@ -1,7 +1,6 @@
 package ca.bc.gov.educ.api.document.controller;
 
 import java.nio.file.Files;
-import java.util.Date;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -15,9 +14,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import ca.bc.gov.educ.api.document.exception.RestExceptionHandler;
 import ca.bc.gov.educ.api.document.model.DocumentEntity;
-import ca.bc.gov.educ.api.document.model.DocumentOwnerEntity;
+import ca.bc.gov.educ.api.document.props.ApplicationProperties;
 import ca.bc.gov.educ.api.document.repository.DocumentRepository;
+import ca.bc.gov.educ.api.document.rest.RestUtils;
+import ca.bc.gov.educ.api.support.DocumentBuilder;
+import ca.bc.gov.educ.api.support.MockRestServer;
 import ca.bc.gov.educ.api.support.WithMockOAuth2Scope;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,7 +29,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-
 
 import static org.hamcrest.Matchers.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,37 +47,30 @@ public class DocumentWebMvcTests {
     @Autowired
     private DocumentRepository repository;
 
+    @Autowired
+    private RestUtils restUtils;
+
+    @Autowired
+    private ApplicationProperties props;
+
     private UUID documentID;
 
     private UUID penReqID = UUID.randomUUID();
 
 
     @Before
-    public void initialize() {
-        mvc = MockMvcBuilders.standaloneSetup(documentController).build();
+    public void setUp() {
+        mvc = MockMvcBuilders.standaloneSetup(documentController)
+                .setControllerAdvice(new RestExceptionHandler()).build();
 
-        DocumentEntity document = new DocumentEntity();
-        document.setDocumentTypeCode("CAPASSPORT");
-        document.setFileName("card");
-        document.setFileExtension("jpg");
-        document.setFileSize(4000);
-        document.setDocumentData("My card!".getBytes());
-        document.setCreateUser("API");
-        document.setCreateDate(new Date());
-        document.setUpdateUser("API");
-        document.setUpdateDate(new Date());
+        MockRestServer.createServer(restUtils, props);
 
-        DocumentOwnerEntity owner = new DocumentOwnerEntity();
-        this.penReqID = UUID.randomUUID();
-        owner.setDocumentOwnerTypeCode("PENRETRIEV");
-        owner.setDocumentOwnerID(this.penReqID);
-        owner.setCreateUser("API");
-        owner.setCreateDate(new Date());
-        owner.setUpdateUser("API");
-        owner.setUpdateDate(new Date());
-
-        document.addOwner(owner);
-        
+        DocumentEntity document = new DocumentBuilder()
+                                        .withoutDocumentID()
+                                        //.withoutCreateAndUpdateUser()
+                                        .withTypeCode("CAPASSPORT")
+                                        .build();
+        this.penReqID = document.getDocumentOwners().get(0).getDocumentOwnerID();
         document = this.repository.save(document);
         this.documentID = document.getDocumentID();
     }
@@ -114,6 +109,30 @@ public class DocumentWebMvcTests {
     }
 
     @Test
+    @WithMockOAuth2Scope(scope = "WRITE_DOCUMENT")
+    public void createDocumentWithInvalidFileSizeTest() throws Exception {
+        this.mvc.perform(post("/").contentType(MediaType.APPLICATION_JSON)
+            .content(Files.readAllBytes(new ClassPathResource(
+                "../model/document-req-invalid-filesize.json", DocumentWebMvcTests.class).getFile().toPath()))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andDo(print())
+            .andExpect(jsonPath("$.message", containsStringIgnoringCase("documentData")));
+    }
+
+    @Test
+    @WithMockOAuth2Scope(scope = "WRITE_DOCUMENT")
+    public void createDocumentWithoutDocumentDataTest() throws Exception {
+        this.mvc.perform(post("/").contentType(MediaType.APPLICATION_JSON)
+            .content(Files.readAllBytes(new ClassPathResource(
+                "../model/document-req-without-doc-data.json", DocumentWebMvcTests.class).getFile().toPath()))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andDo(print())
+            .andExpect(jsonPath("$.subErrors[0].field", is("documentData")));
+    }
+
+    @Test
     @WithMockOAuth2Scope(scope = "DELETE_DOCUMENT")
     public void deleteDocumentTest() throws Exception {
         this.mvc.perform(delete("/" + this.documentID.toString())
@@ -145,5 +164,46 @@ public class DocumentWebMvcTests {
             .andExpect(jsonPath("$.documentOwners[0].documentID").doesNotExist())
             .andExpect(jsonPath("$.documentOwners[0].documentOwnerTypeCode", is("PENRETRIEV")))
             .andExpect(jsonPath("$.documentOwners[0].documentOwnerID", is(this.penReqID.toString())));
+    }
+
+    @Test
+    @WithMockOAuth2Scope(scope = "READ_DOCUMENT_REQUIREMENTS")
+    public void getDocumentRequirementsTest() throws Exception {
+        this.mvc.perform(get("/file-requirements")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andDo(print())
+            .andExpect(jsonPath("$.maxSize", is(props.getMaxFileSize())))
+            .andExpect(jsonPath("$.extensions.length()", is(props.getFileExtensions().size())))
+            .andExpect(jsonPath("$.extensions[0]", is(props.getFileExtensions().get(0))));
+    }
+
+    @Test
+    @WithMockOAuth2Scope(scope = "WRITE_DOCUMENT_OWNER")
+    public void createDocumentOwnerTest() throws Exception {
+        this.mvc.perform(post("/" +  this.documentID.toString() + "/owners")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(Files.readAllBytes(new ClassPathResource(
+                "../model/document-owner-req.json", DocumentWebMvcTests.class).getFile().toPath()))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andDo(print())
+            .andExpect(jsonPath("$.documentID", is(this.documentID.toString())))
+            .andExpect(jsonPath("$.documentOwners.length()", is(2)))
+            .andExpect(jsonPath("$.documentOwners[*].documentOwnerTypeCode", hasItem("STUDENT")))
+            .andExpect(jsonPath("$.documentOwners[*].documentOwnerID", hasItem("cef0cbf3-6458-4f13-a418-ee4d7e7505df")));
+    }
+
+    @Test
+    @WithMockOAuth2Scope(scope = "WRITE_DOCUMENT_OWNER")
+    public void createDocumentOwnerWithInvalidDocumentIdTest() throws Exception {
+        this.mvc.perform(post("/" +  UUID.randomUUID().toString() + "/owners")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(Files.readAllBytes(new ClassPathResource(
+                "../model/document-owner-req.json", DocumentWebMvcTests.class).getFile().toPath()))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andDo(print())
+            .andExpect(jsonPath("$.message", containsStringIgnoringCase("DocumentEntity")));
     }
 }

@@ -1,6 +1,8 @@
 package ca.bc.gov.educ.api.document.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,6 +28,8 @@ import java.util.UUID;
 public class DocumentOwnerEntity {
 
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     @Id
     @ManyToOne
     @JoinColumn(name = "student_document_id", updatable = false, columnDefinition = "BINARY(16)")
@@ -42,19 +46,23 @@ public class DocumentOwnerEntity {
     UUID documentOwnerID;
 
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
     @Column(name = "create_user", updatable = false)
     String createUser;
 
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
     @PastOrPresent
     @Column(name = "create_date", updatable = false)
     Date createDate;
 
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
     @Column(name = "update_user")
     String updateUser;
 
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
     @PastOrPresent
     @Column(name = "update_date")
     Date updateDate;

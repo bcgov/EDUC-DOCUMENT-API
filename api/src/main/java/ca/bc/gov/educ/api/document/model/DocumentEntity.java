@@ -1,6 +1,9 @@
 package ca.bc.gov.educ.api.document.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -14,8 +17,6 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 
@@ -58,11 +59,11 @@ public class DocumentEntity {
     @Column(name = "file_name")
     String fileName;
 
+    @NotNull(message = "fileExtension cannot be null")
     @Column(name = "file_extension")
     String fileExtension;
 
-    @Min(value = 1, message = "fileSize cannot be less than 1 byte")
-    @Max(value = 10_485_760, message = "fileSize cannot be greater than 10MB")
+    @NotNull(message = "fileSize cannot be null")
     @Column(name = "file_size")
     Integer fileSize;
 
@@ -84,6 +85,8 @@ public class DocumentEntity {
     Date updateDate;
 
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     @Basic(fetch = FetchType.LAZY)
     @Lob
     @NotNull(message = "documentData cannot be null")
@@ -103,7 +106,9 @@ public class DocumentEntity {
     }
 
     public void addOwner(DocumentOwnerEntity owner) {
-        this.documentOwners.add(owner);
+        if(! this.documentOwners.contains(owner)) {
+            this.documentOwners.add(owner);
+        }
         owner.setDocument(this);
     }
 

@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ca.bc.gov.educ.api.document.model.DocumentEntity;
+import ca.bc.gov.educ.api.document.model.DocumentOwnerEntity;
+import ca.bc.gov.educ.api.document.model.DocumentRequirementEntity;
 import ca.bc.gov.educ.api.document.model.Views;
 import ca.bc.gov.educ.api.document.service.DocumentService;
 
@@ -39,7 +41,8 @@ public class DocumentController {
     @PreAuthorize("#oauth2.hasScope('READ_DOCUMENT')")
     @JsonView(Views.Document.class)
     public DocumentEntity readDocument(@PathVariable UUID documentID) {
-        return service.retrieveDocument(documentID);
+        DocumentEntity document = service.retrieveDocument(documentID);
+        return document;
     }
 
     @PostMapping()
@@ -60,6 +63,20 @@ public class DocumentController {
     @PreAuthorize("#oauth2.hasScope('READ_DOCUMENT')")
     @JsonView(Views.DocumentMetadata.class)
     public DocumentEntity readDocumentMetadata(@PathVariable UUID documentID) {
-        return service.retrieveDocument(documentID);
+        return service.retrieveDocumentMetadata(documentID);
+    }
+
+    @GetMapping("/file-requirements")
+    @PreAuthorize("#oauth2.hasScope('READ_DOCUMENT_REQUIREMENTS')")
+    public DocumentRequirementEntity getDocumentRequirements() {
+        return service.getDocumentRequirements();
+    }
+
+    @PostMapping("/{documentID}/owners")
+    @PreAuthorize("#oauth2.hasAnyScope('WRITE_DOCUMENT_OWNER')")
+    @JsonView(Views.DocumentMetadata.class)
+    public DocumentEntity createDocumentOwner(@PathVariable UUID documentID, 
+            @Validated @RequestBody DocumentOwnerEntity owner) throws Exception {
+        return service.createDocumentOwner(documentID, owner);
     }
 }

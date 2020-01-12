@@ -60,8 +60,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
      * @param ex the InvalidParameterException
      * @return the ApiError object
      */
-    @ExceptionHandler(InvalidParameterException.class)
-    protected ResponseEntity<Object> handleInvalidParameter(InvalidParameterException ex) {
+    @ExceptionHandler({InvalidParameterException.class, InvalidValueException.class})
+    protected ResponseEntity<Object> handleInvalidParameter(RuntimeException ex) {
         ApiError apiError = new ApiError(BAD_REQUEST);
         apiError.setMessage(ex.getMessage());
         return buildResponseEntity(apiError);

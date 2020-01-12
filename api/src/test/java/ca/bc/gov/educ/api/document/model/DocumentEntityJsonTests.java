@@ -2,7 +2,6 @@ package ca.bc.gov.educ.api.document.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Date;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -14,6 +13,8 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import ca.bc.gov.educ.api.support.DocumentBuilder;
+
 
 @RunWith(SpringRunner.class)
 @AutoConfigureJsonTesters
@@ -23,33 +24,12 @@ public class DocumentEntityJsonTests {
 
     private DocumentEntity document;
 
-    private UUID penReqID = UUID.randomUUID();
+    private UUID penReqID;
 
     @Before
-    public void initilize() {
-        this.document = new DocumentEntity();
-        UUID documentID = UUID.randomUUID();
-        document.setDocumentID(documentID);
-        document.setDocumentTypeCode("BCSCPHOTO");
-        document.setFileName("card");
-        document.setFileExtension("jpg");
-        document.setFileSize(4000);
-        document.setDocumentData("My card!".getBytes());
-        document.setCreateUser("API");
-        document.setCreateDate(new Date());
-        document.setUpdateUser("API");
-        document.setUpdateDate(new Date());
-
-        DocumentOwnerEntity owner = new DocumentOwnerEntity();
-        
-        owner.setDocumentOwnerTypeCode("PENRETRIEV");
-        owner.setDocumentOwnerID(this.penReqID);
-        owner.setCreateUser("API");
-        owner.setCreateDate(new Date());
-        owner.setUpdateUser("API");
-        owner.setUpdateDate(new Date());
-
-        document.addOwner(owner);
+    public void setUp() {
+        this.document = new DocumentBuilder().build();
+        this.penReqID = this.document.getDocumentOwners().get(0).getDocumentOwnerID();
     }
 
     @Test
@@ -97,6 +77,19 @@ public class DocumentEntityJsonTests {
         assertThat(document.getDocumentData()).isEqualTo("My card!".getBytes());
         assertThat(document.getDocumentOwners().size()).isEqualTo(2);
         assertThat(document.getDocumentOwners().get(0).getDocumentOwnerTypeCode()).isEqualTo("PENRETRIEV");
+    }
+
+    @Test
+    public void documentDeserializeWithExtraTest() throws Exception {
+        DocumentEntity document = this.jsonTester.readObject("document-extra-properties.json");
+        assertThat(document.getDocumentOwners().size()).isEqualTo(2);
+        assertThat(document.getDocumentOwners().get(0).getDocumentOwnerTypeCode()).isEqualTo("PENRETRIEV");
+
+        assertThat(document.getDocumentOwners().get(0).getDocument()).isNull();
+        assertThat(document.getDocumentOwners().get(0).getCreateUser()).isNull();
+        assertThat(document.getDocumentOwners().get(0).getCreateDate()).isNull();
+        assertThat(document.getDocumentOwners().get(0).getUpdateUser()).isNull();
+        assertThat(document.getDocumentOwners().get(0).getUpdateDate()).isNull();
     }
 
 }
