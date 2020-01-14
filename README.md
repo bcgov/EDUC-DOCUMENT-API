@@ -19,7 +19,7 @@ The document management API allows users to upload and manage supporting documen
 
 ## Documentation
 
-* [Online API Spec](https://student1.docs.apiary.io/#)
+* [Online API Spec](https://documentstorage1.docs.apiary.io/#)
 * [Openshift Readme](tools/README.md)
 * [PEN Registry Wiki](https://github.com/bcgov/EDUC-INFRA-COMMON/wiki)
 
