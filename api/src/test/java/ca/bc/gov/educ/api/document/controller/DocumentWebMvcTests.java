@@ -181,7 +181,7 @@ public class DocumentWebMvcTests {
     @Test
     @WithMockOAuth2Scope(scope = "WRITE_DOCUMENT_OWNER")
     public void createDocumentOwnerTest() throws Exception {
-        this.mvc.perform(post("/" +  this.documentID.toString() + "/owners")
+        this.mvc.perform(post("/" +  this.documentID.toString() + "/owner")
             .contentType(MediaType.APPLICATION_JSON)
             .content(Files.readAllBytes(new ClassPathResource(
                 "../model/document-owner-req.json", DocumentWebMvcTests.class).getFile().toPath()))
@@ -197,7 +197,7 @@ public class DocumentWebMvcTests {
     @Test
     @WithMockOAuth2Scope(scope = "WRITE_DOCUMENT_OWNER")
     public void createDocumentOwnerWithInvalidDocumentIdTest() throws Exception {
-        this.mvc.perform(post("/" +  UUID.randomUUID().toString() + "/owners")
+        this.mvc.perform(post("/" +  UUID.randomUUID().toString() + "/owner")
             .contentType(MediaType.APPLICATION_JSON)
             .content(Files.readAllBytes(new ClassPathResource(
                 "../model/document-owner-req.json", DocumentWebMvcTests.class).getFile().toPath()))

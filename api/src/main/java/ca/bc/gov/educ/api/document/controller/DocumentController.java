@@ -72,7 +72,7 @@ public class DocumentController {
         return service.getDocumentRequirements();
     }
 
-    @PostMapping("/{documentID}/owners")
+    @PostMapping("/{documentID}/owner")
     @PreAuthorize("#oauth2.hasAnyScope('WRITE_DOCUMENT_OWNER')")
     @JsonView(Views.DocumentMetadata.class)
     public DocumentEntity createDocumentOwner(@PathVariable UUID documentID, 
