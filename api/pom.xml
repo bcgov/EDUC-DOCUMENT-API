@@ -11,6 +11,13 @@
 
 	<properties>
 		<java.version>1.8</java.version>
+		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+		<sonar.surefire.reportsPath>${project.build.directory}/surefire-reports</sonar.surefire.reportsPath>
+		<sonar.jacoco.reportPaths>${project.build.directory}/coverage-reports/jacoco.exec</sonar.jacoco.reportPaths>
+		<sonar.projectVersion>${project.version}</sonar.projectVersion>
+		<!-- Enable language to disable other language analysis -->
+		<sonar.language>java</sonar.language>
+		<sonar.exclusions>src/main/resources/**</sonar.exclusions>
 	</properties>
 
 	<parent>
@@ -108,10 +115,11 @@
 		          </execution>
 		        </executions>
 		      </plugin>
-			<!--<plugin>
+			<plugin>
 				<groupId>org.sonarsource.scanner.maven</groupId>
 				<artifactId>sonar-maven-plugin</artifactId>
-			</plugin>-->
+				<version>3.7.0.1746</version>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -137,6 +145,31 @@
 						<goals>
 							<goal>enhance</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.4</version>
+				<executions>
+					<execution>
+						<id>default-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/coverage-reports/jacoco.exec</destFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-report</id>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
