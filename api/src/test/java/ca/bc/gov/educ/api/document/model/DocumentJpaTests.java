@@ -69,7 +69,7 @@ public class DocumentJpaTests {
     @Test
     public void deleteDocumentTest() {
         this.repository.deleteById(this.document.getDocumentID());
-        assertThat(this.repository.findById(this.document.getDocumentID()).isEmpty()).isTrue();
+        assertThat(this.repository.findById(this.document.getDocumentID()).isPresent()).isFalse();
 
         DocumentOwnerId ownerId = new DocumentOwnerId();
         ownerId.setDocument(this.document.getDocumentID());
@@ -77,6 +77,6 @@ public class DocumentJpaTests {
         ownerId.setDocumentOwnerTypeCode(owner.getDocumentOwnerTypeCode());
         ownerId.setDocumentOwnerID(owner.getDocumentOwnerID());
 
-        assertThat(this.ownerRepository.findById(ownerId).isEmpty()).isTrue();
+        assertThat(this.ownerRepository.findById(ownerId).isPresent()).isFalse();
     }
 }

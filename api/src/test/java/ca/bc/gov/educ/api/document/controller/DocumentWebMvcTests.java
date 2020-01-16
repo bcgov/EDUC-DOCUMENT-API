@@ -148,7 +148,7 @@ public class DocumentWebMvcTests {
             .andExpect(jsonPath("$.documentOwners[0].documentOwnerID", is(this.penReqID.toString())));
 
 
-        assertThat(repository.findById(this.documentID).isEmpty()).isTrue();
+        assertThat(repository.findById(this.documentID).isPresent()).isFalse();
     }
 
     @Test
