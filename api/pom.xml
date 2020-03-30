@@ -73,11 +73,6 @@
 			<version>2.2</version>
 		</dependency>
 		<dependency>
-			<groupId>ca.bc.gov.educ.api.codetable</groupId>
-			<artifactId>codetable-api-client</artifactId>
-			<version>0.0.1.SNAPSHOT</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
